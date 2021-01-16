@@ -6,7 +6,7 @@
  * @flow strict-local
  */
 
-import React from 'react';
+import React, {useState} from 'react';
 import {
   SafeAreaView,
   StyleSheet,
@@ -23,63 +23,114 @@ import {
   DebugInstructions,
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
+import Avatar from './src/components/avatar';
+import {Divider, SearchBar} from 'react-native-elements';
+import {generateChatData} from './mock';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 const styles = StyleSheet.create({
   scrollView: {
     backgroundColor: Colors.lighter,
+    height: '100%',
   },
-  engine: {
-    position: 'absolute',
-    right: 0,
+  chatlistItem: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    borderBottomColor: 'lightgray',
+    borderBottomWidth: 1,
+    paddingVertical: 10,
+    flexWrap: 'wrap',
+    width: '100%',
   },
-  body: {
-    backgroundColor: Colors.white,
+  chatlistText: {
+    paddingHorizontal: 5,
+    fontSize: 20,
+    opacity:0.9
   },
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
+  chatTitle: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: Colors.black,
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-    color: Colors.dark,
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-  footer: {
-    color: Colors.dark,
-    fontSize: 12,
-    fontWeight: '600',
-    padding: 4,
-    paddingRight: 12,
-    textAlign: 'right',
+  chatHeader: {
+    display: 'flex',
+    backgroundColor: Colors.lighter,
+    flexDirection: 'row',
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
 });
 
+const ChatListItem = (props) => {
+  const {username, message, initials, color} = props;
+
+  return (
+    <View style={styles.chatlistItem}>
+      <Avatar username={username} initials={initials} color={color}/>
+      <View style={{width: '80%'}}>
+        <Text
+          ellipsizeMode="tail"
+          numberOfLines={2}
+          style={styles.chatlistText}>
+          {message}
+        </Text>
+      </View>
+    </View>
+  );
+};
+
+const ChatHeader = (props) => {
+  return (
+    <View style={styles.chatHeader}>
+      <View>
+        <Text
+          style={{fontSize: 28, paddingHorizontal: 15, paddingVertical: 10}}>
+          Chat App
+        </Text>
+      </View>
+      <View style={{marginRight: 10}}>
+        <Icon name="ellipsis-v" size={30} />
+      </View>
+    </View>
+  );
+};
+
 const App: () => React$Node = () => {
+  const [chatData, setChatData] = useState(generateChatData(10));
+  const [search, setSearch] = useState('');
   return (
     <>
       <StatusBar barStyle="dark-content" />
       <SafeAreaView>
+        <ChatHeader />
+        <SearchBar
+          placeholder="Search"
+          onChangeText={setSearch}
+          value={search}
+          containerStyle={{
+            backgroundColor: Colors.lighter,
+            borderStyle: 'dashed',
+          }}
+          inputContainerStyle={{
+            backgroundColor: Colors.lighter,
+            borderWidth: 0,
+            borderColor: 'transparent',
+            borderRadius: 20,
+          }}
+        />
         <ScrollView
           contentInsetAdjustmentBehavior="automatic"
           style={styles.scrollView}>
-         <View>
-           <Text>This is going to be a Chat UI</Text>
-         </View>
+          {chatData.map((chatObject) => {
+            return <ChatListItem {...chatObject} />;
+          })}
         </ScrollView>
       </SafeAreaView>
     </>
   );
 };
-
-
 
 export default App;
