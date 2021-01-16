@@ -3,18 +3,18 @@ import {Avatar as AvatarElement} from 'react-native-elements';
 import {View} from 'react-native';
 
 function ChatAvatar(props) {
-  const {username, initials, color} = props
+  const {username, initials, color,icon} = props
   return (
     <View>
       <AvatarElement
         rounded
         source={{
-          uri:
-            'https://s3.amazonaws.com/uifaces/faces/twitter/ladylexy/128.jpg',
+          uri:icon
         }}
         size={"medium"}
         title={initials && initials}
         avatarStyle={{backgroundColor:color}}
+        titleStyle={{color:"white"}}
       />
     </View>
   );

@@ -27,6 +27,8 @@ import Avatar from './src/components/avatar';
 import {Divider, SearchBar} from 'react-native-elements';
 import {generateChatData} from './mock';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import ChatList from './src/views/chatlist';
+import CreateChat from './src/views/create-chat';
 
 const styles = StyleSheet.create({
   scrollView: {
@@ -47,7 +49,7 @@ const styles = StyleSheet.create({
   chatlistText: {
     paddingHorizontal: 5,
     fontSize: 20,
-    opacity:0.9
+    opacity: 0.9,
   },
   chatTitle: {
     display: 'flex',
@@ -65,11 +67,16 @@ const styles = StyleSheet.create({
 });
 
 const ChatListItem = (props) => {
-  const {username, message, initials, color} = props;
+  const {username, message, initials, color, usericon} = props;
 
   return (
     <View style={styles.chatlistItem}>
-      <Avatar username={username} initials={initials} color={color}/>
+      <Avatar
+        username={username}
+        initials={initials}
+        color={color}
+        icon={usericon}
+      />
       <View style={{width: '80%'}}>
         <Text
           ellipsizeMode="tail"
@@ -99,7 +106,6 @@ const ChatHeader = (props) => {
 };
 
 const App: () => React$Node = () => {
-  const [chatData, setChatData] = useState(generateChatData(10));
   const [search, setSearch] = useState('');
   return (
     <>
@@ -121,13 +127,8 @@ const App: () => React$Node = () => {
             borderRadius: 20,
           }}
         />
-        <ScrollView
-          contentInsetAdjustmentBehavior="automatic"
-          style={styles.scrollView}>
-          {chatData.map((chatObject) => {
-            return <ChatListItem {...chatObject} />;
-          })}
-        </ScrollView>
+        {/* <ChatList /> */}
+        <CreateChat/>
       </SafeAreaView>
     </>
   );
