@@ -29,6 +29,7 @@ import {generateChatData} from './mock';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import ChatList from './src/views/chatlist';
 import CreateChat from './src/views/create-chat';
+import FlashCard from './src/views/flash-card';
 
 const styles = StyleSheet.create({
   scrollView: {
@@ -108,10 +109,10 @@ const ChatHeader = (props) => {
 const App: () => React$Node = () => {
   const [search, setSearch] = useState('');
   return (
-    <>
+    <View style={{backgroundColor: '#EDF4FC'}}>
       <StatusBar barStyle="dark-content" />
       <SafeAreaView>
-        <ChatHeader />
+        {/* <ChatHeader />
         <SearchBar
           placeholder="Search"
           onChangeText={setSearch}
@@ -127,10 +128,11 @@ const App: () => React$Node = () => {
             borderRadius: 20,
           }}
         />
-        {/* <ChatList /> */}
-        <CreateChat/>
+        
+        <CreateChat/> */}
+        <FlashCard/>
       </SafeAreaView>
-    </>
+    </View>
   );
 };
 
