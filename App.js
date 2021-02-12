@@ -30,6 +30,7 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import ChatList from './src/views/chatlist';
 import CreateChat from './src/views/create-chat';
 import FlashCard from './src/views/flash-card';
+import CardStacks from './src/views/card-stacks';
 
 const styles = StyleSheet.create({
   scrollView: {
@@ -130,7 +131,8 @@ const App: () => React$Node = () => {
         />
         
         <CreateChat/> */}
-        <FlashCard/>
+        {/* <FlashCard/> */}
+        <CardStacks />
       </SafeAreaView>
     </View>
   );
