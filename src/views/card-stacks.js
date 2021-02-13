@@ -1,7 +1,8 @@
 import React, {useState} from 'react';
-import {StyleSheet, View, Text} from 'react-native';
+import {StyleSheet, View, Text, Image} from 'react-native';
 import Collapsible from 'react-native-collapsible';
 import Accordion from 'react-native-collapsible/Accordion';
+import NustLogo from '../images/nustlogo.png';
 
 const styles = StyleSheet.create({
   mainContainer: {
@@ -12,71 +13,107 @@ const styles = StyleSheet.create({
   },
   singeStackContainer: {
     backgroundColor: 'white',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 4.65,
-
-    elevation: 8,
     borderTopColor: '#43B8FE',
     borderTopWidth: 4,
-    marginBottom: 30,
+  },
+  sectionTitleContainer: {
+    paddingVertical: 20,
+    paddingHorizontal: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: 'lightgray',
+  },
+  sectionTitleText: {
+    fontSize: 15,
+    fontWeight: '500',
+  },
+  sectionContent: {
+    backgroundColor: 'white',
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+  },
+  sectionContainer: {
+    //backgroundColor: 'lightgray',
+    //padding: 5,
+    margin: 5,
+    borderRadius: 7,
+    display: 'flex',
+    justifyContent: 'space-between',
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 60,
+    borderColor: 'lightgray',
+    borderWidth: 1,
+  },
+  sectionContentBody: {
+    fontSize: 15,
+    padding: 10,
+    color: 'gray',
   },
 });
 
 const SECTIONS = [
   {
-    title: 'First',
-    content: 'Lorem ipsum...',
+    sectionHeading: 'UNIVERSITIES',
+    content: [
+      {logo: require('../images/nustlogo.png'), name: 'NUST'},
+      {logo: require('../images/mdcatlogo.jpg'), name: 'MDCAT'},
+      {logo: require('../images/ecatlogo.png'), name: 'ECAT'},
+    ],
   },
   {
-    title: 'Second',
-    content: 'Lorem ipsum...',
+    sectionHeading: 'JOBS',
+    content: [
+      {logo: require('../images/nustlogo.png'), name: 'Ministry of Finance'},
+      {logo: require('../images/mdcatlogo.jpg'), name: 'Ministry of Health'},
+      {logo: require('../images/ecatlogo.png'), name: 'Others'},
+    ],
+  },
+  {
+    sectionHeading: 'TESTS',
+    content: [
+      {logo: require('../images/nustlogo.png'), name: 'GRE'},
+      {logo: require('../images/mdcatlogo.jpg'), name: 'IELTS'},
+      {logo: require('../images/ecatlogo.png'), name: 'Others'},
+    ],
   },
 ];
-
-const SingleStack = (props) => {
-  const {label} = props;
-  return (
-    <View style={styles.singeStackContainer}>
-      <Text style={{fontSize: 20, padding: 20}}>{label}</Text>
-    </View>
-  );
-};
 
 function CardStacks(props) {
   const [activeSections, setActiveSectionns] = useState([]);
 
-  const renderSectionTitle = (section) => {
+  const sectionHeading = (section) => {
     return (
-      <View style={styles.singeStackContainer}>
-        <Text style={{fontSize: 20, padding: 20}}>{section.title}</Text>
+      <View style={[styles.singeStackContainer, styles.sectionTitleContainer]}>
+        <Text styles={styles.sectionTitleText}>{section.sectionHeading}</Text>
       </View>
     );
   };
 
-  const renderHeader = (section) => {
+  const sectionContent = (section) => {
     return (
-      <View style={styles.singeStackContainer}>
-        <Text style={{fontSize: 20, padding: 20}}>{section.title}</Text>
-      </View>
-    );
-  };
-
-  const renderContent = (section) => {
-    return (
-      <View style={styles.content}>
-        <Text>{section.content}</Text>
+      <View style={styles.sectionContent}>
+        {section.content.map((itr) => {
+          return (
+            <View style={styles.sectionContainer}>
+              <View>
+                <Text style={styles.sectionContentBody}>{itr.name}</Text>
+              </View>
+              <View>
+                <Image
+                  style={{width: 140, height: 58, opacity: 0.7}}
+                  source={itr.logo}
+                />
+              </View>
+            </View>
+          );
+        })}
       </View>
     );
   };
 
   const updateSections = (activeSections) => {
     //this.setState({activeSections});
-    setActiveSectionns({activeSections});
+    setActiveSectionns(activeSections);
   };
 
   return (
@@ -84,9 +121,9 @@ function CardStacks(props) {
       <Accordion
         sections={SECTIONS}
         activeSections={activeSections}
-        renderSectionTitle={renderSectionTitle}
-        renderHeader={renderHeader}
-        renderContent={renderContent}
+        renderSectionTitle={() => {}}
+        renderHeader={sectionHeading}
+        renderContent={sectionContent}
         onChange={updateSections}
       />
     </View>
