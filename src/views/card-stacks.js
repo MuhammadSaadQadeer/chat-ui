@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {StyleSheet, View, Text, Image} from 'react-native';
+import {StyleSheet, View, Text, Image, TouchableOpacity} from 'react-native';
 import Collapsible from 'react-native-collapsible';
 import Accordion from 'react-native-collapsible/Accordion';
 import NustLogo from '../images/nustlogo.png';
@@ -80,7 +80,7 @@ const SECTIONS = [
 
 function CardStacks(props) {
   const [activeSections, setActiveSectionns] = useState([]);
-
+  const {navigation} = props;
   const sectionHeading = (section) => {
     return (
       <View style={[styles.singeStackContainer, styles.sectionTitleContainer]}>
@@ -94,7 +94,9 @@ function CardStacks(props) {
       <View style={styles.sectionContent}>
         {section.content.map((itr) => {
           return (
-            <View style={styles.sectionContainer}>
+            <TouchableOpacity
+              style={styles.sectionContainer}
+              onPress={() => navigation.navigate('FlashCards')}>
               <View>
                 <Text style={styles.sectionContentBody}>{itr.name}</Text>
               </View>
@@ -104,7 +106,7 @@ function CardStacks(props) {
                   source={itr.logo}
                 />
               </View>
-            </View>
+            </TouchableOpacity>
           );
         })}
       </View>

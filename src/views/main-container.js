@@ -1,0 +1,24 @@
+import React from 'react';
+
+import CardStacks from './card-stacks';
+
+import 'react-native-gesture-handler';
+
+import {NavigationContainer} from '@react-navigation/native';
+import {createStackNavigator} from '@react-navigation/stack';
+import FlashCard from './flash-card';
+
+const Stack = createStackNavigator();
+
+function MainNavContainer(props) {
+  return (
+    <NavigationContainer>
+      <Stack.Navigator initialRouteName="CardStacks">
+        <Stack.Screen name="CardStacks" component={CardStacks} />
+        <Stack.Screen name="FlashCards" component={FlashCard} />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+}
+
+export default MainNavContainer;

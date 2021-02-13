@@ -31,6 +31,7 @@ import ChatList from './src/views/chatlist';
 import CreateChat from './src/views/create-chat';
 import FlashCard from './src/views/flash-card';
 import CardStacks from './src/views/card-stacks';
+import MainNavContainer from './src/views/main-container';
 
 const styles = StyleSheet.create({
   scrollView: {
@@ -107,35 +108,49 @@ const ChatHeader = (props) => {
   );
 };
 
-const App: () => React$Node = () => {
-  const [search, setSearch] = useState('');
+function DetailsScreen() {
   return (
-    <View style={{backgroundColor: '#EDF4FC'}}>
-      <StatusBar barStyle="dark-content" />
-      <SafeAreaView>
-        {/* <ChatHeader />
-        <SearchBar
-          placeholder="Search"
-          onChangeText={setSearch}
-          value={search}
-          containerStyle={{
-            backgroundColor: Colors.lighter,
-            borderStyle: 'dashed',
-          }}
-          inputContainerStyle={{
-            backgroundColor: Colors.lighter,
-            borderWidth: 0,
-            borderColor: 'transparent',
-            borderRadius: 20,
-          }}
-        />
-        
-        <CreateChat/> */}
-        {/* <FlashCard/> */}
-        <CardStacks />
-      </SafeAreaView>
+    <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+      <Text>Details Screen</Text>
     </View>
   );
+}
+
+// const App: () => React$Node = () => {
+//   const [search, setSearch] = useState('');
+//   return (
+//     <View style={{backgroundColor: '#EDF4FC'}}>
+//       <StatusBar barStyle="dark-content" />
+//       <SafeAreaView>
+//         {/* <ChatHeader />
+//         <SearchBar
+//           placeholder="Search"
+//           onChangeText={setSearch}
+//           value={search}
+//           containerStyle={{
+//             backgroundColor: Colors.lighter,
+//             borderStyle: 'dashed',
+//           }}
+//           inputContainerStyle={{
+//             backgroundColor: Colors.lighter,
+//             borderWidth: 0,
+//             borderColor: 'transparent',
+//             borderRadius: 20,
+//           }}
+//         />
+
+//         <CreateChat/> */}
+//         {/* <FlashCard/> */}
+
+//         <MainNavContainer />
+//       </SafeAreaView>
+//     </View>
+//   );
+// };
+
+const App: () => React$Node = () => {
+  const [search, setSearch] = useState('');
+  return <MainNavContainer />;
 };
 
 export default App;
