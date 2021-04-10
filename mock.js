@@ -28,8 +28,8 @@ export const generateSynonymData = (recordNumber) => {
       type: faker.random.word(),
       meaning: faker.random.word(),
       sentence: faker.lorem.sentence(),
-      synonyms: faker.random.words(),
-      antonyms: faker.random.words(),
+      synonyms: [faker.random.word(), faker.random.word()],
+      antonyms: [faker.random.word(), faker.random.word()],
     };
     data.push(card);
   }

@@ -1,4 +1,4 @@
-import React, {useState, useRef} from 'react';
+import React, {useState, useRef, useEffect} from 'react';
 import {
   View,
   Text,
@@ -109,15 +109,31 @@ const styles = StyleSheet.create({
   },
 });
 
-function Swiper(props) {
+const ACTIONS = {
+  ATTEMPT: 'ATTEMPT',
+};
+
+const reducer = (state, action) => {
+  switch (action) {
+    case 'ATTEMPT':
+      return {...state};
+  }
+};
+function FlashCard(props) {
   const ref = useRef(null);
   const [flashCardData, setFlashCardData] = useState(generateSynonymData(10));
 
+  useEffect(() => {
+    setFlashCardData((flashCards) => {
+      return flashCards.map((card) => {
+        card['attempted'] = false;
+        return card;
+      });
+    });
+  }, []);
+
   function renderFlashCard(props) {
-    {
-      console.log(props);
-    }
-    const {word} = props;
+    const {word, antonyms, synonyms, sentence, meaning, attempted} = props.item;
     return (
       <View style={styles.container}>
         <View
@@ -133,50 +149,84 @@ function Swiper(props) {
           <View style={styles.propertyContainer}>
             <Text style={styles.propertyKey}>Meaning</Text>
             <View style={styles.synsContainer}>
-              <Text style={styles.arialBoldStyle}>harsh or jarring sound</Text>
+              <Text style={styles.arialBoldStyle}>{meaning}</Text>
             </View>
           </View>
-          {/* Sentence */}
-          <View style={styles.propertyContainer}>
-            <Text style={styles.propertyKey}>Sentence</Text>
-            <View style={styles.synsContainer}>
-              <Text style={styles.arialBoldStyle}>
-                A cacophony of voices in a dozen languages filled thetrain
-                station.
-              </Text>
+
+          {/* True false button container */}
+          {!attempted ? (
+            <View style={styles.btnContainer}>
+              <TouchableOpacity
+                style={[styles.btnPositive, styles.btn]}
+                onPress={() => {
+                  let newObject = Object.assign(
+                    {},
+                    {...props.item, attempted: true},
+                  );
+
+                  setFlashCardData((prev) => {
+                    prev[props.index] = newObject;
+
+                    return prev;
+                  });
+                }}>
+                <Text
+                  style={{color: 'white', fontSize: 17, textAlign: 'center'}}>
+                  I know this word
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={[styles.btnNegative, styles.btn]}>
+                <Text style={{color: 'white', fontSize: 17}}>
+                  I don't know this word
+                </Text>
+              </TouchableOpacity>
             </View>
-          </View>
-          {/* Anto */}
-          <View style={styles.propertyContainer}>
-            <Text style={styles.propertyKey}>Synonym</Text>
-            <View style={styles.synsContainer}>
-              <Text style={styles.arialBoldStyle}>
-                noise, racket, rattle, roar
-              </Text>
-            </View>
-          </View>
-          {/* Syn */}
-          <View style={styles.propertyContainer}>
-            <Text style={styles.propertyKey}>Antonym</Text>
-            <View style={styles.synsContainer}>
-              <Text style={styles.arialBoldStyle}>
-                noise, racket, rattle, roar
-              </Text>
-            </View>
-          </View>
-          {/* Button Container */}
-          <View style={styles.btnContainer}>
-            <TouchableOpacity style={[styles.btnPositive, styles.btn]}>
-              <Text style={{color: 'white', fontSize: 17}}>
-                I know this word
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={[styles.btnNegative, styles.btn]}>
-              <Text style={{color: 'white', fontSize: 17}}>
-                I don't know this word
-              </Text>
-            </TouchableOpacity>
-          </View>
+          ) : null}
+
+          {attempted ? (
+            <>
+              {/* Sentence */}
+              <View style={styles.propertyContainer}>
+                <Text style={styles.propertyKey}>Sentence</Text>
+                <View style={styles.synsContainer}>
+                  <Text style={styles.arialBoldStyle}>{sentence}</Text>
+                </View>
+              </View>
+              {/* Anto */}
+              <View style={styles.propertyContainer}>
+                <Text style={styles.propertyKey}>Synonym</Text>
+                <View style={styles.synsContainer}>
+                  {synonyms.map((syn) => {
+                    return <Text style={styles.arialBoldStyle}>{syn}</Text>;
+                  })}
+                </View>
+              </View>
+              {/* Syn */}
+              <View style={styles.propertyContainer}>
+                <Text style={styles.propertyKey}>Antonym</Text>
+                <View style={styles.synsContainer}>
+                  {antonyms.map((ayn) => {
+                    return <Text style={styles.arialBoldStyle}>{ayn}</Text>;
+                  })}
+                </View>
+              </View>
+              {/* Button Container */}
+              <View>
+                <TouchableOpacity style={[styles.btnPositive, styles.btn]}>
+                  <Text
+                    style={{color: 'white', fontSize: 17, textAlign: 'center'}}>
+                    Next
+                  </Text>
+                </TouchableOpacity>
+                {/* <TouchableOpacity style={[styles.btnNegative, styles.btn]}>
+                  <Text style={{color: 'white', fontSize: 17}}>
+                    I don't know this word
+                  </Text>
+                </TouchableOpacity> */}
+              </View>
+            </>
+          ) : null}
         </View>
       </View>
     );
@@ -192,4 +242,4 @@ function Swiper(props) {
   );
 }
 
-export default Swiper;
+export default FlashCard;
