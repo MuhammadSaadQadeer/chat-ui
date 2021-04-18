@@ -1,4 +1,4 @@
-import React, {useState, useRef, useEffect} from 'react';
+import React, {useState, useRef, useEffect, useReducer} from 'react';
 import {
   View,
   Text,
@@ -109,26 +109,41 @@ const styles = StyleSheet.create({
   },
 });
 
+const initialState = {
+  flashCardData: generateSynonymData(10),
+};
 const ACTIONS = {
   ATTEMPT: 'ATTEMPT',
 };
 
 const reducer = (state, action) => {
+  console.log({state}, action);
   switch (action) {
     case 'ATTEMPT':
-      return {...state};
+      return {...state, flashCardData: action.payload.flashCardData};
+    default:
+      return initialState;
   }
 };
 function FlashCard(props) {
   const ref = useRef(null);
-  const [flashCardData, setFlashCardData] = useState(generateSynonymData(10));
+  // const [flashCardData, setFlashCardData] = useState(generateSynonymData(10));
+
+  const [state, dispatch] = useReducer(reducer, initialState);
+
+  const {flashCardData} = state;
+
+  const [count, setCount] = useState(false);
 
   useEffect(() => {
-    setFlashCardData((flashCards) => {
-      return flashCards.map((card) => {
-        card['attempted'] = false;
-        return card;
-      });
+    dispatch({
+      type: ACTIONS.ATTEMPT,
+      payload: {
+        flashCardData: flashCardData.map((card) => {
+          card['attempted'] = false;
+          return card;
+        }),
+      },
     });
   }, []);
 
@@ -164,11 +179,16 @@ function FlashCard(props) {
                     {...props.item, attempted: true},
                   );
 
-                  setFlashCardData((prev) => {
-                    prev[props.index] = newObject;
+                  flashCardData[props.index] = newObject;
 
-                    return prev;
+                  dispatch({
+                    type: ACTIONS.ATTEMPT,
+                    payload: {flashCardData},
                   });
+
+                  console.log({flashCardData});
+                  // hack for completing the render cycle
+                  setCount((prv) => prv + 1);
                 }}>
                 <Text
                   style={{color: 'white', fontSize: 17, textAlign: 'center'}}>
