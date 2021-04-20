@@ -241,7 +241,7 @@ function FlashCard(props) {
               <View>
                 <TouchableOpacity
                   onPress={() => {
-                    this._carousel.snapToNext();
+                    refPointer.snapToNext();
                   }}
                   style={[styles.btnPositive, styles.btn]}>
                   <Text
@@ -256,10 +256,12 @@ function FlashCard(props) {
       </View>
     );
   }
+
+  const [refPointer, setRefPointer] = useState(null);
   return (
     <Carousel
       ref={(c) => {
-        this._carousel = c;
+        setRefPointer(c);
       }}
       data={flashCardData}
       renderItem={renderFlashCard}
