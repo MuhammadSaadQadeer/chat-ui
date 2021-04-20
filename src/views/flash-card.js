@@ -109,31 +109,32 @@ const styles = StyleSheet.create({
   },
 });
 
-const initialState = {
-  flashCardData: generateSynonymData(10),
-};
 const ACTIONS = {
   ATTEMPT: 'ATTEMPT',
 };
 
 const reducer = (state, action) => {
   console.log({state}, action);
-  switch (action) {
+  switch (action.type) {
     case 'ATTEMPT':
       return {...state, flashCardData: action.payload.flashCardData};
     default:
-      return initialState;
+      throw new Error();
   }
 };
 function FlashCard(props) {
   const ref = useRef(null);
-  // const [flashCardData, setFlashCardData] = useState(generateSynonymData(10));
 
-  const [state, dispatch] = useReducer(reducer, initialState);
+  const {words} = props.route.params;
+  const [state, dispatch] = useReducer(reducer, {
+    flashCardData: words,
+  });
 
   const {flashCardData} = state;
 
   const [count, setCount] = useState(false);
+
+  console.log(words, flashCardData);
 
   useEffect(() => {
     dispatch({
@@ -148,7 +149,15 @@ function FlashCard(props) {
   }, []);
 
   function renderFlashCard(props) {
-    const {word, antonyms, synonyms, sentence, meaning, attempted} = props.item;
+    console.log(props);
+    const {
+      word,
+      antonym,
+      synonym,
+      sentence_1,
+      meaning_1,
+      attempted,
+    } = props.item;
     return (
       <View style={styles.container}>
         <View
@@ -164,7 +173,7 @@ function FlashCard(props) {
           <View style={styles.propertyContainer}>
             <Text style={styles.propertyKey}>Meaning</Text>
             <View style={styles.synsContainer}>
-              <Text style={styles.arialBoldStyle}>{meaning}</Text>
+              <Text style={styles.arialBoldStyle}>{meaning_1}</Text>
             </View>
           </View>
 
@@ -210,40 +219,36 @@ function FlashCard(props) {
               <View style={styles.propertyContainer}>
                 <Text style={styles.propertyKey}>Sentence</Text>
                 <View style={styles.synsContainer}>
-                  <Text style={styles.arialBoldStyle}>{sentence}</Text>
+                  <Text style={styles.arialBoldStyle}>{sentence_1}</Text>
                 </View>
               </View>
+
               {/* Anto */}
               <View style={styles.propertyContainer}>
                 <Text style={styles.propertyKey}>Synonym</Text>
                 <View style={styles.synsContainer}>
-                  {synonyms.map((syn) => {
-                    return <Text style={styles.arialBoldStyle}>{syn}</Text>;
-                  })}
+                  <Text style={styles.arialBoldStyle}>{synonym}</Text>
                 </View>
               </View>
               {/* Syn */}
               <View style={styles.propertyContainer}>
                 <Text style={styles.propertyKey}>Antonym</Text>
                 <View style={styles.synsContainer}>
-                  {antonyms.map((ayn) => {
-                    return <Text style={styles.arialBoldStyle}>{ayn}</Text>;
-                  })}
+                  <Text style={styles.arialBoldStyle}>{antonym}</Text>
                 </View>
               </View>
               {/* Button Container */}
               <View>
-                <TouchableOpacity style={[styles.btnPositive, styles.btn]}>
+                <TouchableOpacity
+                  onPress={() => {
+                    this._carousel.snapToNext();
+                  }}
+                  style={[styles.btnPositive, styles.btn]}>
                   <Text
                     style={{color: 'white', fontSize: 17, textAlign: 'center'}}>
                     Next
                   </Text>
                 </TouchableOpacity>
-                {/* <TouchableOpacity style={[styles.btnNegative, styles.btn]}>
-                  <Text style={{color: 'white', fontSize: 17}}>
-                    I don't know this word
-                  </Text>
-                </TouchableOpacity> */}
               </View>
             </>
           ) : null}
@@ -253,7 +258,9 @@ function FlashCard(props) {
   }
   return (
     <Carousel
-      ref={ref}
+      ref={(c) => {
+        this._carousel = c;
+      }}
       data={flashCardData}
       renderItem={renderFlashCard}
       sliderWidth={Dimensions.get('window').width}

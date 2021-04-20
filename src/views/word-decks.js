@@ -5,6 +5,7 @@ import {View, Text} from 'react-native';
 import {decks} from '../mock-data';
 
 function WordDecks(props) {
+  const {navigation} = props;
   const WordDeck = ({title, numberOfWords, diffultyLevel, words}) => {
     return (
       <View
@@ -31,7 +32,12 @@ function WordDecks(props) {
             marginTop: 5,
             borderRadius: 5,
           }}>
-          <TouchableOpacity>
+          <TouchableOpacity
+            onPress={() =>
+              navigation.navigate('FlashCards', {
+                words,
+              })
+            }>
             <Text style={{fontSize: 20, color: 'grey'}}>Learn these words</Text>
           </TouchableOpacity>
         </View>
