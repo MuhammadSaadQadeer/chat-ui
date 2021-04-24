@@ -1,14 +1,9 @@
 import React, {useState, useRef, useEffect, useReducer} from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Button,
-  TouchableOpacity,
-  Dimensions,
-} from 'react-native';
+import {supermemo} from 'supermemo';
+import {View, Text, StyleSheet, Button, TouchableOpacity, Dimensions} from 'react-native';
 import {generateSynonymData} from '../../mock';
 import Carousel from 'react-native-snap-carousel';
+import {minBy, findIndex, sortBy, keysIn, set, keys, clone, mapKeys, mapValues} from 'lodash';
 
 const styles = StyleSheet.create({
   container: {
@@ -111,16 +106,38 @@ const styles = StyleSheet.create({
 
 const ACTIONS = {
   ATTEMPT: 'ATTEMPT',
+  ADD_TO_LEARNING: 'ADD_TO_LEARNING',
+  ADD_TO_LEARNT: 'ADD_TO_LEARNT',
+  ADD_TO_MASTERED: 'ADD_TO_MASTERED',
 };
 
 const reducer = (state, action) => {
-  console.log({state}, action);
   switch (action.type) {
     case 'ATTEMPT':
+      console.log(action.payload.flashCardData);
       return {...state, flashCardData: action.payload.flashCardData};
+    case 'ADD_TO_LEARNING':
+      return {
+        ...state,
+        learning: action.payload.learning,
+      };
+    case 'ADD_TO_LEARNT':
+      return {...state, learnt: action.payload.learnt};
+    case 'ADD_TO_MASTERED':
+      return {
+        ...state,
+        mastered: action.payload.mastered,
+      };
     default:
       throw new Error();
   }
+};
+
+const colorMap = {
+  'New Word': 'lightgrey',
+  Learning: 'orange',
+  Learnt: 'blue',
+  Mastered: 'lightgreen',
 };
 function FlashCard(props) {
   const ref = useRef(null);
@@ -128,13 +145,24 @@ function FlashCard(props) {
   const {words} = props.route.params;
   const [state, dispatch] = useReducer(reducer, {
     flashCardData: words,
+    learning: new Map(),
+    learnt: new Map(),
+    mastered: new Map(),
   });
 
-  const {flashCardData} = state;
+  const {flashCardData, mastered, learning, learnt} = state;
 
   const [count, setCount] = useState(false);
+  const {navigation} = props;
 
-  console.log(words, flashCardData);
+  function convertMaptoArray(sampleMap) {
+    let arr = [];
+    for (let value of sampleMap.values()) {
+      arr.push(value);
+    }
+
+    return arr;
+  }
 
   useEffect(() => {
     dispatch({
@@ -142,32 +170,83 @@ function FlashCard(props) {
       payload: {
         flashCardData: flashCardData.map((card) => {
           card['attempted'] = false;
+          card['interval'] = 0;
+          card['efactor'] = 2.5;
+          card['repetition'] = 0;
+          card['category'] = 'New Word';
+
           return card;
         }),
       },
     });
   }, []);
 
+  const addToCategories = ({efactor, card}) => {
+    // ADDING TO LEARNT
+    if (efactor > 2.0 && efactor <= 2.1) {
+      if (learning.has(card.word)) {
+        learning.delete(card.word);
+        dispatch({
+          type: ACTIONS.ADD_TO_LEARNING,
+          payload: {learning: learning},
+        });
+      }
+      learnt.set(card.word, card);
+      dispatch({
+        type: ACTIONS.ADD_TO_LEARNT,
+        payload: {learnt: learnt},
+      });
+    }
+
+    // ADDING TO LEARNING
+    if (efactor <= 2.0 && efactor > 1.7) {
+      learning.set(card.word, card);
+      dispatch({
+        type: ACTIONS.ADD_TO_LEARNING,
+        payload: {learning: learning},
+      });
+
+      if (learnt.has(card.word)) {
+        learnt.delete(card.word);
+        dispatch({
+          type: ACTIONS.ADD_TO_LEARNT,
+          payload: {learnt: learnt},
+        });
+      }
+    }
+  };
   function renderFlashCard(props) {
-    console.log(props);
-    const {
-      word,
-      antonym,
-      synonym,
-      sentence_1,
-      meaning_1,
-      attempted,
-    } = props.item;
+    const {word, antonym, synonym, sentence_1, meaning_1, attempted, category, efactor, type} = props.item;
     return (
       <View style={styles.container}>
-        <View
-          elevation={5}
-          style={[styles.cardContainer, styles.shadowContainer]}>
+        <View elevation={5} style={[styles.cardContainer, styles.shadowContainer]}>
           <View style={styles.propertyContainer}>
             {/* Word */}
             <Text style={styles.word}>{word}</Text>
             {/* Type */}
-            <Text style={styles.type}>{`(Noun)`}</Text>
+            <Text style={styles.type}>
+              {type} {efactor}
+            </Text>
+
+            <View
+              style={{
+                backgroundColor: colorMap[category],
+                maxWidth: 100,
+                borderRadius: 8,
+                padding: 10,
+                marginTop: 10,
+              }}>
+              <Text
+                style={{
+                  backgroundColor: colorMap[category],
+
+                  color: 'white',
+                  textAlign: 'center',
+                  fontWeight: 'bold',
+                }}>
+                {category}
+              </Text>
+            </View>
             {/* Meaning */}
           </View>
           <View style={styles.propertyContainer}>
@@ -183,11 +262,27 @@ function FlashCard(props) {
               <TouchableOpacity
                 style={[styles.btnPositive, styles.btn]}
                 onPress={() => {
+                  let res = supermemo(flashCardData[props.index], 5); // res contains efactor
                   let newObject = Object.assign(
                     {},
-                    {...props.item, attempted: true},
+                    {
+                      ...props.item,
+                      ...res,
+                      attempted: true,
+                    },
                   );
 
+                  // Add to master if efactor is greater than 2.3
+                  if (res.efactor >= 2.1) {
+                    newObject.category = 'Mastered';
+                  }
+                  if (res.efactor <= 2.0 && res.efactor > 1.7) {
+                    newObject.category = 'Learning';
+                  }
+
+                  if (res.efactor > 2.0 && res.efactor <= 2.1) {
+                    newObject.category = 'Learnt';
+                  }
                   flashCardData[props.index] = newObject;
 
                   dispatch({
@@ -195,20 +290,34 @@ function FlashCard(props) {
                     payload: {flashCardData},
                   });
 
-                  console.log({flashCardData});
-                  // hack for completing the render cycle
+                  // hack for
+                  // categoriseCards({efactor: newObject.efactor, card: newObject});
+                  addToCategories({efactor: newObject.efactor, card: newObject});
                   setCount((prv) => prv + 1);
                 }}>
-                <Text
-                  style={{color: 'white', fontSize: 17, textAlign: 'center'}}>
-                  I know this word
-                </Text>
+                <Text style={{color: 'white', fontSize: 17, textAlign: 'center'}}>I know this word</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={[styles.btnNegative, styles.btn]}>
-                <Text style={{color: 'white', fontSize: 17}}>
-                  I don't know this word
-                </Text>
+              <TouchableOpacity
+                onPress={() => {
+                  let newObject = Object.assign(
+                    {},
+                    {
+                      ...props.item,
+                      ...supermemo(flashCardData[props.index], 1),
+                      attempted: true,
+                      category: 'Learning',
+                    },
+                  );
+                  flashCardData[props.index] = newObject;
+
+                  // hack for completing the render cycle
+                  // categoriseCards({efactor: newObject.efactor, card: newObject});
+                  addToCategories({efactor: newObject.efactor, card: newObject});
+                  setCount((prv) => prv + 1);
+                }}
+                style={[styles.btnNegative, styles.btn]}>
+                <Text style={{color: 'white', fontSize: 17}}>I don't know this word</Text>
               </TouchableOpacity>
             </View>
           ) : null}
@@ -241,13 +350,39 @@ function FlashCard(props) {
               <View>
                 <TouchableOpacity
                   onPress={() => {
-                    refPointer.snapToNext();
+                    // initially show only 4 new words after that initiate learning mechanism
+                    if (count < 7) {
+                      refPointer.snapToNext();
+                    } else {
+                      // Get next card
+
+                      if (learning.size > 0) {
+                        let newData = convertMaptoArray(learning);
+
+                        dispatch({type: ACTIONS.ATTEMPT, payload: {flashCardData: newData}});
+                        refPointer.snapToItem(0);
+                      } else if (learnt.size > 0) {
+                        let newData = convertMaptoArray(learnt);
+                        dispatch({type: ACTIONS.ATTEMPT, payload: {flashCardData: newData}});
+                      }
+
+                      //refPointer.snapToItem(index);
+                      refPointer.snapToNext();
+                    }
+                    let newObject = Object.assign(
+                      {},
+                      {
+                        ...props.item,
+                        attempted: false,
+                      },
+                    );
+
+                    flashCardData[props.index] = newObject;
+
+                    addToCategories({efactor: newObject.efactor, card: newObject});
                   }}
                   style={[styles.btnPositive, styles.btn]}>
-                  <Text
-                    style={{color: 'white', fontSize: 17, textAlign: 'center'}}>
-                    Next
-                  </Text>
+                  <Text style={{color: 'white', fontSize: 17, textAlign: 'center'}}>Next</Text>
                 </TouchableOpacity>
               </View>
             </>
@@ -258,16 +393,42 @@ function FlashCard(props) {
   }
 
   const [refPointer, setRefPointer] = useState(null);
+
   return (
-    <Carousel
-      ref={(c) => {
-        setRefPointer(c);
-      }}
-      data={flashCardData}
-      renderItem={renderFlashCard}
-      sliderWidth={Dimensions.get('window').width}
-      itemWidth={Dimensions.get('window').width}
-    />
+    <>
+      {flashCardData.length > 0 ? (
+        <Carousel
+          ref={(c) => {
+            setRefPointer(c);
+          }}
+          data={flashCardData}
+          renderItem={renderFlashCard}
+          sliderWidth={Dimensions.get('window').width}
+          itemWidth={Dimensions.get('window').width}
+        />
+      ) : (
+        <View
+          style={{
+            padding: 20,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}>
+          <Text style={{color: 'grey'}}>You Finished The Deck!</Text>
+          <TouchableOpacity
+            style={{
+              padding: 20,
+              backgroundColor: 'lightgrey',
+              width: '100%',
+              marginTop: 10,
+              borderRadius: 8,
+            }}
+            onPress={() => navigation.navigate('WordDecks')}>
+            <Text style={{textAlign: 'center', fontSize: 18, color: 'grey'}}>View Decks</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+    </>
   );
 }
 
